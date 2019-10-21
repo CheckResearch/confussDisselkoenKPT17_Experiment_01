@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <dc:creator>mKetzer</dc:creator>
+  <dc:title>Experiment for "conf/uss/DisselkoenKPT17"</dc:title>
+  <dc:subject>Reproduction of the work in "Prime+Abort: A Timer-Free High-Precision L3 Cache Attack using Intel TSX." by "Craig Disselkoen, David Kohlbrenner, Leo Porter, Dean M. Tullsen"</dc:subject>
+  <dc:description>Your Input Here</dc:description>
+  <dc:date>2019-10-21T08:33:52.2489316</dc:date>
+  <dc:type>Reproduction</dc:type>
+  <dc:language>English</dc:language>
+  <dc:identifier>https://checkresearch.org/Experiment/View/0e8dc075-4da3-4492-a9df-14a6e7587559</dc:identifier>
+  <dc:identifier>https://github.com/CheckResearch/confussDisselkoenKPT17_Experiment_01</dc:identifier>
+  <dc:relation>conf/uss/DisselkoenKPT17</dc:relation>
+</metadata>
