@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
+#include <aes-pp-helper.h>
+#include <aes-pa-helper.h>
 
 //
 // Created by Markus Ketzer.
@@ -29,25 +31,25 @@ void usage(const char* prog){
     exit(1);
 }
 
+char* libcrypto_path;
+
 int main(int argc, char **argv) {
     int cycles = 100;
-    char* xlateDir = "../originalcode/xlate";
+    libcrypto_path = "openssl-1.1.1b/libcrypto.so";
     int opt;
 
-    while((opt = getopt(argc, argv, "c:d:")) != -1){
+    while((opt = getopt(argc, argv, "c:l:")) != -1){
         switch(opt) {
             case 'c':
                 cycles = atoi(optarg);
                 break;
-            case 'd':
-                xlateDir = malloc(strlen(optarg));
-                strcpy(xlateDir, optarg);
+            case 'l':
+                libcrypto_path = malloc(strlen(optarg));
+                strcpy(libcrypto_path, optarg);
         }
     }
 
     fptr = fopen("../results.txt", "w");
-
-    chdir(xlateDir);
 
     measure_prime_and_probe(cycles);
     measure_prime_and_abort(cycles);
@@ -72,19 +74,15 @@ void measure(int cycleCount, char* title, void (*action)()){
 }
 
 void measure_prime_and_probe(int cycleCount){
-    measure(cycleCount, "Prime and Probe L1", prime_and_probe);
+    set_up_pp(libcrypto_path);
+    measure(cycleCount, "Prime and Probe L1", execute_pp);
+    clean_up_pp();
 }
 
 void measure_prime_and_abort(int cycleCount){
-    measure(cycleCount, "Prime and Abort L1", prime_and_abort);
-}
-
-void prime_and_probe(){
-    int status = system("LD_LIBRARY_PATH=\"./openssl-1.1.1b:$LD_LIBRARY_PATH\" ./obj/aes-pp openssl-1.1.1b/libcrypto.so");
-}
-void prime_and_abort(){
-
-    int status = system("LD_LIBRARY_PATH=\"./openssl-1.1.1b:$LD_LIBRARY_PATH\" ./obj/aes-pa openssl-1.1.1b/libcrypto.so");
+    set_up_pa(libcrypto_path);
+    measure(cycleCount, "Prime and Abort L1", execute_pa);
+    clean_up_pa();
 }
 
 double median(double* array, int count) {

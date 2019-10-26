@@ -2,30 +2,34 @@
 
  Publication ["Prime+Abort: A Timer-Free High-Precision L3 Cache Attack using Intel TSX."](https://dblp.uni-trier.de/rec/html/conf/uss/DisselkoenKPT17) by "Craig Disselkoen, David Kohlbrenner, Leo Porter, Dean M. Tullsen"
 
-## HOWTO
-
-Please put a complete documentation of the experiment in this file
-
-Use [Markdown](https://guides.github.com/features/mastering-markdown/)!
-
 ## Experiment Setup
 
 ### Experiment Content
 
-Which part of the original publication is reproduced
+The aforementioned paper describes a new kind of cache attack based on the Prime+Probe algorithm that does not rely on the use of timers and is therefore said to be much faster than Prime+Probe. The goal of this experiment is to verify if the algorithm called Prime+Abort descibed in the paper actually improves the performance of the Prime+Probe algorithm. It has not been attempted to replicate the exact same time measurements since they heavily depend on the hardware or operating system the benchmarks have been performed on.
 
 ### Hardware/Software
 
-Describe your Hardware & Software setup
+#### Hardware:
+The whole experiment has been conducted in a Virtual Machine with the following Hardware specifications:
+* 2 Processor cores of a Intel Core i9-9880H
+* 8 Gb of Memory
+* Ethernet connection via NAT over Intel PRO/1000MT Desktop
 
-## Experiment Assumptions
+It is important to note that the Prime+Abort algorithm relys on Intels implementation of transactinal memory called ["Intel TSX"](TODO:WEBSITE) which means that it can only be run on CPUs that support TSX.
 
-Make it explicit here if you made any assumptions in your experiment
+#### Software:
+* Ubuntu 18.04
+* [XLATE](https://github.com/vusec/xlate)
 
 ## Preconditions
 
-Something others need to prepare in order to run your code (e.g. libraries, python modules, ...)
+In order to build the code `libelf-dev` and `libssl-dev` have to be installed. If you are using the apt package manager this can be done by running:
 
+    # apt install libelf-dev
+    # apt install libssl-dev
+
+If you want to run the benchmark please follow the steps described in the `README.md` of the `code` folder.
 ## Experiment Steps
 
 Describe each step of the experiment
