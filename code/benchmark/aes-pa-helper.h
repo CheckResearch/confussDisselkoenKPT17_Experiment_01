@@ -29,7 +29,7 @@
 #include <xlate/x86-64/time.h>
 #include <xlate/x86-64/tsx.h>
 
-void set_up_pa(char* libcrypto_path);
+int set_up_pa(char* libcrypto_path);
 
 void execute_pa();
 

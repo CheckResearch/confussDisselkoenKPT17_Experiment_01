@@ -47,7 +47,7 @@ unsigned char restored[128];
 	size_t byte;
 	size_t nways = 16;
 
-void set_up_pp(char* libcrypto_path){
+int set_up_pp(char* libcrypto_path){
 	if ((fd = open(libcrypto_path, O_RDONLY)) < 0) {
 		perror("open");
 		return -1;
@@ -73,7 +73,7 @@ void set_up_pp(char* libcrypto_path){
 	AES_set_encrypt_key(key_data, 128, &key);
 
 	page_set_init(&wset, 16);
-
+    return 1;
 }
 
 void execute_pp()

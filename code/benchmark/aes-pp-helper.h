@@ -29,7 +29,7 @@
 #include <xlate/x86-64/clflush.h>
 #include <xlate/x86-64/time.h>
 
-void set_up_pp(char* libcrypto_path);
+int set_up_pp(char* libcrypto_path);
 
 void execute_pp();
 

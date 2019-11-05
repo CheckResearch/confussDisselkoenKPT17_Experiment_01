@@ -21,13 +21,15 @@ obj += $(addprefix $(BUILD)/, $(OBJS))
 all: $(BUILD)/benchmark
 
 $(BUILD)/benchmark: $(obj)
-	$(CC) $(OBJS) -o $@ $(LDFLAGS) $(LIBS)
+	$(CC) $(obj) -o $@ $(LDFLAGS) $(LIBS)
 
 $(BUILD)/%.o: %.c
-	$(CC) -c $< $(CFLAGS)
+	mkdir -p $(dir $@)
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 $(BUILD)/xlate/%.o: ../originalcode/xlate/%.c
-	$(CC) -c $< $(CFLAGS)
+	mkdir -p $(dir $@)
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 clean:
 	rm -rf ${BUILD}
