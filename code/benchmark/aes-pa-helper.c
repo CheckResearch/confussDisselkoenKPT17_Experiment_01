@@ -3,14 +3,14 @@
  */
 #include "aes-pa-helper.h"
 
-void *crypto_find_te0(int fd)
+void *crypto_find_te0(int file)
 {
 	Elf *elf;
 	void *base;
 
 	elf_version(EV_CURRENT);
 
-	elf = elf_begin(fd, ELF_C_READ, NULL);
+	elf = elf_begin(file, ELF_C_READ, NULL);
 
 	if (!(base = gelf_find_sym_ptr(elf, "Te0"))) {
 		fprintf(stderr, "error: unable to find the 'Te0' symbol in "
@@ -60,25 +60,17 @@ unsigned char plain[16];
 unsigned char cipher[128];
 unsigned char restored[128];
 
-	AES_KEY key;
-	struct list *node;
-	struct list set;
-	struct stat stat;
-	struct page_set lines, wset;
-	int fd;
-	char *base;
-	char *te0;
-	char *cl;
-	uintptr_t colour = 0;
-	size_t size;
-	size_t round;
-	size_t i, j;
-	size_t byte;
-	size_t nways = 16;
-	unsigned ret;
+AES_KEY key;
+struct page_set lines, wset;
+int fd;
+char *base;
+char *te0;
 
 int set_up_pa(char * libcrypto_path)
 {
+    struct stat stat;
+    size_t size;
+
 	if ((fd = open(libcrypto_path, O_RDONLY)) < 0) {
 		perror("open");
 		return -1;
@@ -107,6 +99,16 @@ int set_up_pa(char * libcrypto_path)
 }
 
 void execute_pa(){
+    struct list *node;
+    struct list set;
+    char *cl;
+    uintptr_t colour = 0;
+    size_t round;
+    size_t i, j;
+    size_t byte;
+    size_t nways = 16;
+    unsigned ret;
+
 	for (cl = base + (size_t)te0, j = 0; j < 16; ++j, cl += 64) {
 		if (!colour || colour != ((uintptr_t)cl & ~(4 * KIB - 1))) {
 			for (i = 0; i < wset.len; ++i) {
