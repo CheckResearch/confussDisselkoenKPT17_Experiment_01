@@ -23,9 +23,6 @@ void measure_prime_and_abort(int cycleCount);
 void measure(int cycleCount, char* title, void (*action)());
 
 
-void prime_and_probe();
-void prime_and_abort();
-
 void usage(const char* prog){
     fprintf(stderr, "Usage: %s -c cycles -d directory\n", prog);
     exit(1);
