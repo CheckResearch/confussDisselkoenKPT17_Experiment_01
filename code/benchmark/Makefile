@@ -5,10 +5,13 @@ CFLAGS=-g -std=gnu99
 LDFLAGS=-g
 
 
-all: ${TARGETS}
+all: benchmark
 
-${TARGETS}: %: %.o 
-	${CC} ${LDFLAGS} -o $@ $@.o
+benchmark: ${OBJS}
+	${CC} -o $@ ${OBJS}
+
+%.o: %.c
+	$(CC) -c $<
 
 
 clean:
