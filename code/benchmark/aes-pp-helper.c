@@ -3,7 +3,7 @@
  */
 #include "aes-pp-helper.h"
 
-void *crypto_find_te0(int file)
+void *pp_crypto_find_te0(int file)
 {
 	Elf *elf;
 	void *base;
@@ -24,7 +24,7 @@ void *crypto_find_te0(int file)
 	return base;
 }
 
-unsigned char key_data[32] = { 0 };
+unsigned char pp_key_data[32] = { 0 };
 
 unsigned char plain[16];
 unsigned char cipher[128];
@@ -46,7 +46,7 @@ int set_up_pp(char* libcrypto_path){
 		return -1;
 	}
 
-	if (!(te0 = crypto_find_te0(fd)))
+	if (!(te0 = pp_crypto_find_te0(fd)))
 		return -1;
 
 	if (fstat(fd, &stat) < 0) {
@@ -63,7 +63,7 @@ int set_up_pp(char* libcrypto_path){
 
 	build_page_pool(&lines, 4096);
 
-	AES_set_encrypt_key(key_data, 128, &key);
+	AES_set_encrypt_key(pp_key_data, 128, &key);
 
 	page_set_init(&wset, 16);
     return 1;
