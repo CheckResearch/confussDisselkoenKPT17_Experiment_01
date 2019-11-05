@@ -1,22 +1,33 @@
+BUILD ?= obj
 FILES=$(wildcard *.c)
 TARGETS=benchmark
-OBJS=${FILES:.c=.o}
-CFLAGS=-I../originalcode/xlate/include
-LDFLAGS=-flto -O2
-LIBS=-lelf -lpthread -lrt
+OBJS+=$(FILES:.c=.o)
+CFLAGS += -D_GNU_SOURCE -g3 -Wall -Wextra -std=gnu11 -O2
+CFLAGS += -I../originalcode/xlate/include
+LDFLAGS += -flto -O2
+LIBS += -lelf -lpthread -lrt -lcrypto
 
 -include ../originalcode/xlate/source/Makefile
 
+dep = $(obj:.o=.d)
+-include $(dep)
+
 .PHONY: all clean
 
-all: benchmark
 
-benchmark: ${OBJS}
-	${CC} -o $@ ${OBJS}
+obj = $(addprefix $(BUILD)/xlate/, $(obj-y))
+obj += $(addprefix $(BUILD)/, $(OBJS))
 
-%.o: %.c
-	$(CC) -c $< $(LDFLAGS) $(LIBS)
+all: $(BUILD)/benchmark
 
+$(BUILD)/benchmark: $(obj)
+	$(CC) $(OBJS) -o $@ $(LDFLAGS) $(LIBS)
+
+$(BUILD)/%.o: %.c
+	$(CC) -c $< $(CFLAGS)
+
+$(BUILD)/xlate/%.o: ../originalcode/xlate/%.c
+	$(CC) -c $< $(CFLAGS)
 
 clean:
-	rm -f ${TARGETS} ${OBJS} *.sig out
+	rm -rf ${BUILD}
