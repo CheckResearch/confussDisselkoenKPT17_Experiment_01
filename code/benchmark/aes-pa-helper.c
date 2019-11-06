@@ -72,7 +72,7 @@ int set_up_pa(char * libcrypto_path)
     size_t size;
 
 	if ((fd = open(libcrypto_path, O_RDONLY)) < 0) {
-		perror("open");
+		perror("open libcrypto");
 		return -1;
 	}
 

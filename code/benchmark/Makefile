@@ -18,9 +18,9 @@ dep = $(obj:.o=.d)
 obj = $(addprefix $(BUILD)/xlate/, $(obj-y))
 obj += $(addprefix $(BUILD)/, $(OBJS))
 
-all: $(BUILD)/benchmark
+all: benchmark
 
-$(BUILD)/benchmark: $(obj)
+benchmark: $(obj)
 	$(CC) $(obj) -o $@ $(LDFLAGS) $(LIBS)
 
 $(BUILD)/%.o: %.c
@@ -32,4 +32,4 @@ $(BUILD)/xlate/%.o: ../originalcode/xlate/%.c
 	$(CC) -c $< -o $@ $(CFLAGS)
 
 clean:
-	rm -rf ${BUILD}
+	rm -rf ${BUILD} benchmark
