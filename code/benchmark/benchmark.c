@@ -32,7 +32,7 @@ char* libcrypto_path;
 
 int main(int argc, char **argv) {
     int cycles = 10;
-    libcrypto_path = "openssl-1.1.1b/libcrypto.so";
+    libcrypto_path = "openssl-1.0.1e/libcrypto.so";
     int opt;
 
     while((opt = getopt(argc, argv, "c:l:")) != -1){
