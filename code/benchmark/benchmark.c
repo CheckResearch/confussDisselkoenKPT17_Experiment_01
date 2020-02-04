@@ -31,7 +31,7 @@ void usage(const char* prog){
 char* libcrypto_path;
 
 int main(int argc, char **argv) {
-    int cycles = 100;
+    int cycles = 10;
     libcrypto_path = "openssl-1.1.1b/libcrypto.so";
     int opt;
 

@@ -68,6 +68,7 @@ char *te0;
 
 int set_up_pa(char * libcrypto_path)
 {
+    printf("Setting up pa\n");
     struct stat stat;
     size_t size;
 
@@ -99,6 +100,7 @@ int set_up_pa(char * libcrypto_path)
 }
 
 void execute_pa(){
+    printf("Executing pa\n");
     struct list *node;
     struct list set;
     char *cl;

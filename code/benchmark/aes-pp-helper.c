@@ -38,6 +38,7 @@ char *base;
 char *te0;
 
 int set_up_pp(char* libcrypto_path){
+    printf("Setting up pp\n");
     struct stat stat;
     size_t size;
 
@@ -71,6 +72,7 @@ int set_up_pp(char* libcrypto_path){
 
 void execute_pp()
 {
+    printf("Executing pp\n");
     uint64_t dt;
     static struct list set;
     char *cl;
