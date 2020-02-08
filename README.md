@@ -32,7 +32,7 @@ In order to build the code `libelf-dev` and `libssl-dev` have to be installed. I
 If you want to run the benchmark please follow the steps described in the `README.md` of the `code` folder.
 ## Experiment Steps
 
-Describe each step of the experiment
+In order to compare the Prime+Probe algorithm with the Prime+Abort the XLATE toolkit has been used. The code has been slightly modify like described in the `README.md` of the `code` folder. The modification has been made for easier incorporation into the code of the benchmarking executable. The benchmark tool executes the Prime+Probe and Prime+Abort code multiple times, tracks the respective execution times and calculates the Min, Max, Median, Q1, Q3 and the Average.
 
 ## Results
 
