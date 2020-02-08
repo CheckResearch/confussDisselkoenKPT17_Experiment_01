@@ -4,15 +4,20 @@
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
-#include "aes-pp-helper.h"
-#include "aes-pa-helper.h"
+#include "l1.h"
+#include "l1_pa.h"
 
 //
 // Created by Markus Ketzer.
 //
 #define CLOCKS_PER_MS (CLOCKS_PER_SEC / 1000)
+#define MAX_SAMPLES 100000
 
 FILE *fptr;
+uint16_t *res_pp;
+uint16_t *res_pa;
+l1pp_t l1_pp;
+l1pp_t l1_pa;
 
 double median(double* array, int count);
 double quartile1(double* array, int count);
@@ -70,14 +75,75 @@ void measure(int cycleCount, char* title, void (*action)()){
     free(times);
 }
 
+void set_up_pp() {
+  l1_pp = l1_prepare();
+
+  int nsets = l1_getmonitoredset(l1_pp, NULL, 0);
+
+  int *map = calloc(nsets, sizeof(int));
+  l1_getmonitoredset(l1_pp, map, nsets);
+
+  int rmap[L1_SETS];
+  for (int i = 0; i < L1_SETS; i++)
+    rmap[i] = -1;
+  for (int i = 0; i < nsets; i++)
+    rmap[map[i]] = i;
+  
+
+  res_pp = calloc(samples * nsets, sizeof(uint16_t));
+  for (int i = 0; i < samples * nsets; i+= 4096/sizeof(uint16_t))
+    res_pp[i] = 1;
+
+    
+    free(map);
+}
+
+void execute_pp() {
+  l1_repeatedprobe(l1_pp, MAX_SAMPLES, res_pp, 0);
+}
+
+void clean_up_pp() {
+    free(res_pp);
+    l1_release(l1_pp);
+}
+
 void measure_prime_and_probe(int cycleCount){
-    set_up_pp(libcrypto_path);
+    set_up_pp();
     measure(cycleCount, "Prime and Probe L1", execute_pp);
     clean_up_pp();
 }
 
+void set_up_pa() {
+    l1_pa = l1_prepare();
+
+  int nsets = l1_getmonitoredset(l1_pa, NULL, 0);
+
+  int *map = calloc(nsets, sizeof(int));
+  l1_getmonitoredset(l1_pa, map, nsets);
+
+  int rmap[L1_SETS];
+  for (int i = 0; i < L1_SETS; i++)
+    rmap[i] = -1;
+  for (int i = 0; i < nsets; i++)
+    rmap[map[i]] = i;
+
+  res_pa = calloc(samples * nsets, sizeof(uint16_t));
+  for (int i = 0; i < samples * nsets; i+= 4096/sizeof(uint16_t))
+    res_pa[i] = 1;
+
+}
+
+void execute_pa() {
+    l1_prime_and_abort(l1_p1, res_pa);
+}
+
+void clean_up_pa() {
+    free(res_pa);
+    l1_release(l1_pa);
+}
+
 void measure_prime_and_abort(int cycleCount){
-    set_up_pa(libcrypto_path);
+    set_up_pa();
     measure(cycleCount, "Prime and Abort L1", execute_pa);
     clean_up_pa();
 }
