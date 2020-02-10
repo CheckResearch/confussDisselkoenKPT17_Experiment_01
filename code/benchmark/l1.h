@@ -17,6 +17,7 @@
  * along with Mastik.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdint.h>
 #ifndef __L1_H__
 #define __L1_H__ 1
 
