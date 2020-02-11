@@ -65,12 +65,12 @@ void print_progress(size_t count, size_t max)
     const char suffix[] = "]";
     const size_t prefix_length = sizeof(prefix) - 1;
     const size_t suffix_length = sizeof(suffix) - 1;
-    char *buffer = calloc(length + prefix_length + suffix_length + 2, 1); // +1 for \0
+    char *buffer = calloc(length + prefix_length + suffix_length + 1, 1); // +1 for \0
     size_t i = 0;
     int filled = (int)(((double)count/max) * length);
 
     strcpy(buffer, prefix);
-    for (; i <= length; ++i)
+    for (; i < length; ++i)
     {
         buffer[prefix_length + i] = i < filled ? '#' : ' ';
     }
