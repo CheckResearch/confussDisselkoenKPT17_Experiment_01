@@ -71,6 +71,7 @@ void measure(int cycleCount, char* title, void (*action)()){
 void prime_and_probe() {
   //Set up
   l1pp_t l1_pp = l1_prepare();
+  int samples = MAX_SAMPLES;
 
   int nsets = l1_getmonitoredset(l1_pp, NULL, 0);
 
@@ -117,7 +118,7 @@ void prime_and_abort() {
     res_pa[i] = 1;
 
   //Execute
-  l1_prime_and_abort(l1_p1, res_pa);
+  l1_prime_and_abort(l1_pa, res_pa);
 
   //Clean up
   free(res_pa);
