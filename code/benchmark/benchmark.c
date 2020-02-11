@@ -14,17 +14,13 @@
 #define MAX_SAMPLES 100000
 
 FILE *fptr;
-uint16_t *res_pp;
-uint16_t *res_pa;
-l1pp_t l1_pp;
-l1pp_t l1_pa;
 
 double median(double* array, int count);
 double quartile1(double* array, int count);
 double quartile3(double* array, int count);
 void printResults(char* action, double* timeMeasurements, int timeMeasurementsCount);
-void measure_prime_and_probe(int cycleCount);
-void measure_prime_and_abort(int cycleCount);
+void prime_and_probe();
+void prime_and_abort();
 void measure(int cycleCount, char* title, void (*action)());
 
 
@@ -33,11 +29,9 @@ void usage(const char* prog){
     exit(1);
 }
 
-char* libcrypto_path;
 
 int main(int argc, char **argv) {
-    int cycles = 10;
-    libcrypto_path = "openssl-1.0.1e/libcrypto.so";
+    int cycles = 1000;
     int opt;
 
     while((opt = getopt(argc, argv, "c:l:")) != -1){
@@ -45,16 +39,15 @@ int main(int argc, char **argv) {
             case 'c':
                 cycles = atoi(optarg);
                 break;
-            case 'l':
-                libcrypto_path = malloc(strlen(optarg));
-                strcpy(libcrypto_path, optarg);
         }
     }
 
     fptr = fopen("../results.txt", "w");
 
-    measure_prime_and_probe(cycles);
-    measure_prime_and_abort(cycles);
+    printf("%s\n", "Measuring Prime and Probe");
+    measure(cycleCount, "Prime and Probe L1", prime_and_probe);
+    printf("%s\n", "Measuring Prime and Abort");
+    measure(cycleCount, "Prime and Probe L1", prime_and_abort);
 
     fclose(fptr);
 
@@ -75,8 +68,9 @@ void measure(int cycleCount, char* title, void (*action)()){
     free(times);
 }
 
-void set_up_pp() {
-  l1_pp = l1_prepare();
+void prime_and_probe() {
+  //Set up
+  l1pp_t l1_pp = l1_prepare();
 
   int nsets = l1_getmonitoredset(l1_pp, NULL, 0);
 
@@ -88,33 +82,24 @@ void set_up_pp() {
     rmap[i] = -1;
   for (int i = 0; i < nsets; i++)
     rmap[map[i]] = i;
-  
 
-  res_pp = calloc(samples * nsets, sizeof(uint16_t));
+
+  uint16_t *res_pp = calloc(samples * nsets, sizeof(uint16_t));
   for (int i = 0; i < samples * nsets; i+= 4096/sizeof(uint16_t))
     res_pp[i] = 1;
 
-    
-    free(map);
-}
-
-void execute_pp() {
+  //Execute
   l1_repeatedprobe(l1_pp, MAX_SAMPLES, res_pp, 0);
+
+  //Clean up
+  free(map);
+  free(res_pp);
+  l1_release(l1_pp);
 }
 
-void clean_up_pp() {
-    free(res_pp);
-    l1_release(l1_pp);
-}
-
-void measure_prime_and_probe(int cycleCount){
-    set_up_pp();
-    measure(cycleCount, "Prime and Probe L1", execute_pp);
-    clean_up_pp();
-}
-
-void set_up_pa() {
-    l1_pa = l1_prepare();
+void prime_and_abort() {
+  //Set up
+  l1pp_t l1_pa = l1_prepare();
 
   int nsets = l1_getmonitoredset(l1_pa, NULL, 0);
 
@@ -127,25 +112,16 @@ void set_up_pa() {
   for (int i = 0; i < nsets; i++)
     rmap[map[i]] = i;
 
-  res_pa = calloc(samples * nsets, sizeof(uint16_t));
+  uint16_t *res_pa = calloc(samples * nsets, sizeof(uint16_t));
   for (int i = 0; i < samples * nsets; i+= 4096/sizeof(uint16_t))
     res_pa[i] = 1;
 
-}
+  //Execute
+  l1_prime_and_abort(l1_p1, res_pa);
 
-void execute_pa() {
-    l1_prime_and_abort(l1_p1, res_pa);
-}
-
-void clean_up_pa() {
-    free(res_pa);
-    l1_release(l1_pa);
-}
-
-void measure_prime_and_abort(int cycleCount){
-    set_up_pa();
-    measure(cycleCount, "Prime and Abort L1", execute_pa);
-    clean_up_pa();
+  //Clean up
+  free(res_pa);
+  l1_release(l1_pa);
 }
 
 double median(double* array, int count) {
