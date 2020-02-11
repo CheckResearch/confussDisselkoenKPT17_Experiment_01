@@ -42,12 +42,14 @@ int main(int argc, char **argv) {
         }
     }
 
-    fptr = fopen("../results.txt", "w");
+    fptr = fopen("./results.txt", "w");
 
     printf("%s\n", "Measuring Prime and Probe");
-    measure(cycleCount, "Prime and Probe L1", prime_and_probe);
+    printf("%s\n", "");
+    measure(cycles, "Prime and Probe L1", prime_and_probe);
     printf("%s\n", "Measuring Prime and Abort");
-    measure(cycleCount, "Prime and Probe L1", prime_and_abort);
+    printf("%s\n", "");
+    measure(cycles, "Prime and Probe L1", prime_and_abort);
 
     fclose(fptr);
 
@@ -55,9 +57,34 @@ int main(int argc, char **argv) {
 }
 
 
+//Source: https://gist.github.com/amullins83/24b5ef48657c08c4005a8fab837b7499
+void print_progress(size_t count, size_t max)
+{
+    const int length = 50;
+    const char prefix[] = "Progress: [";
+    const char suffix[] = "]";
+    const size_t prefix_length = sizeof(prefix) - 1;
+    const size_t suffix_length = sizeof(suffix) - 1;
+    char *buffer = calloc(length + prefix_length + suffix_length + 2, 1); // +1 for \0
+    size_t i = 0;
+    int filled = (int)(((double)count/max) * length);
+
+    strcpy(buffer, prefix);
+    for (; i <= length; ++i)
+    {
+        buffer[prefix_length + i] = i < filled ? '#' : ' ';
+    }
+
+    strcpy(&buffer[prefix_length + i], suffix);
+    printf("\b%c[2K\r%s\n", 27, buffer);
+    fflush(stdout);
+    free(buffer);
+}
+
 void measure(int cycleCount, char* title, void (*action)()){
     double* times = (double *) malloc(cycleCount * sizeof(double));
     for(int i = 0; i < cycleCount; i++){
+        print_progress(i, cycleCount);
         clock_t start,end;
         start = clock();
         action();
@@ -101,6 +128,7 @@ void prime_and_probe() {
 void prime_and_abort() {
   //Set up
   l1pp_t l1_pa = l1_prepare();
+  int samples = MAX_SAMPLES;
 
   int nsets = l1_getmonitoredset(l1_pa, NULL, 0);
 
