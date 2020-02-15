@@ -15,16 +15,22 @@
 
 FILE *fptr;
 
-double median(double* array, int count);
-double quartile1(double* array, int count);
-double quartile3(double* array, int count);
-void printResults(char* action, double* timeMeasurements, int timeMeasurementsCount);
+double median(double *array, int count);
+
+double quartile1(double *array, int count);
+
+double quartile3(double *array, int count);
+
+void printResults(char *action, double *timeMeasurements, int timeMeasurementsCount);
+
 void prime_and_probe();
+
 void prime_and_abort();
-void measure(int cycleCount, char* title, void (*action)());
+
+void measure(int cycleCount, char *title, void (*action)());
 
 
-void usage(const char* prog){
+void usage(const char *prog) {
     fprintf(stderr, "Usage: %s -c cycles -d directory\n", prog);
     exit(1);
 }
@@ -34,8 +40,8 @@ int main(int argc, char **argv) {
     int cycles = 1000;
     int opt;
 
-    while((opt = getopt(argc, argv, "c:l:")) != -1){
-        switch(opt) {
+    while ((opt = getopt(argc, argv, "c:l:")) != -1) {
+        switch (opt) {
             case 'c':
                 cycles = atoi(optarg);
                 break;
@@ -58,8 +64,7 @@ int main(int argc, char **argv) {
 
 
 //Source: https://gist.github.com/amullins83/24b5ef48657c08c4005a8fab837b7499
-void print_progress(size_t count, size_t max)
-{
+void print_progress(size_t count, size_t max) {
     const int length = 50;
     const char prefix[] = "Progress: [";
     const char suffix[] = "]";
@@ -67,11 +72,10 @@ void print_progress(size_t count, size_t max)
     const size_t suffix_length = sizeof(suffix) - 1;
     char *buffer = calloc(length + prefix_length + suffix_length + 1, 1); // +1 for \0
     size_t i = 0;
-    int filled = (int)(((double)count/max) * length);
+    int filled = (int) (((double) count / max) * length);
 
     strcpy(buffer, prefix);
-    for (; i < length; ++i)
-    {
+    for (; i < length; ++i) {
         buffer[prefix_length + i] = i < filled ? '#' : ' ';
     }
 
@@ -81,103 +85,129 @@ void print_progress(size_t count, size_t max)
     free(buffer);
 }
 
-void measure(int cycleCount, char* title, void (*action)()){
-    double* times = (double *) malloc(cycleCount * sizeof(double));
-    for(int i = 0; i < cycleCount; i++){
+void measure(int cycleCount, char *title, void (*action)()) {
+    double *times = (double *) malloc(cycleCount * sizeof(double));
+    for (int i = 0; i < cycleCount; i++) {
         print_progress(i, cycleCount);
-        clock_t start,end;
+        clock_t start, end;
         start = clock();
         action();
         end = clock();
-        times[i] = (double)(end - start);
+        times[i] = (double) (end - start);
     }
     printResults(title, times, cycleCount);
     free(times);
 }
 
 void prime_and_probe() {
-  //Set up
-  l1pp_t l1_pp = l1_prepare();
-  int samples = MAX_SAMPLES;
+    //Set up
+    l1pp_t l1_pp = l1_prepare();
+    int samples = MAX_SAMPLES;
 
-  int nsets = l1_getmonitoredset(l1_pp, NULL, 0);
+    int nsets = l1_getmonitoredset(l1_pp, NULL, 0);
 
-  int *map = calloc(nsets, sizeof(int));
-  l1_getmonitoredset(l1_pp, map, nsets);
+    uint16_t *results = calloc(samples * nsets, sizeof(uint16_t));
+    for (int i = 0; i < samples * nsets; i += 4096 / sizeof(uint16_t))
+        results[i] = 1;
 
-  int rmap[L1_SETS];
-  for (int i = 0; i < L1_SETS; i++)
-    rmap[i] = -1;
-  for (int i = 0; i < nsets; i++)
-    rmap[map[i]] = i;
+    l1_probe(l1_pp, results);
+
+    uint16_t sum = 0;
+    int count = 0;
+    for (int i = 0; i < samples * nsets; i += 4096 / sizeof(uint16_t)) {
+        sum += results[i];
+        count++;
+    }
+
+    uint16_t threshold = (uint16_t)((sum / count) * 1.2);
+
+    int *map = calloc(nsets, sizeof(int));
+    l1_getmonitoredset(l1_pp, map, nsets);
+
+    int rmap[L1_SETS];
+    for (int i = 0; i < L1_SETS; i++)
+        rmap[i] = -1;
+    for (int i = 0; i < nsets; i++)
+        rmap[map[i]] = i;
 
 
-  uint16_t *res_pp = calloc(samples * nsets, sizeof(uint16_t));
-  for (int i = 0; i < samples * nsets; i+= 4096/sizeof(uint16_t))
-    res_pp[i] = 1;
+    uint16_t *res_pp = calloc(samples * nsets, sizeof(uint16_t));
+    for (int i = 0; i < samples * nsets; i += 4096 / sizeof(uint16_t))
+        res_pp[i] = 1;
 
-  //Execute
-  l1_repeatedprobe(l1_pp, MAX_SAMPLES, res_pp, 0);
+    //Execute
+    l1_repeatedprobe(l1_pp, MAX_SAMPLES, res_pp, 0);
 
-  //Clean up
-  free(map);
-  free(res_pp);
-  l1_release(l1_pp);
+    for (int i = 0; i < samples * nsets; i += 4096 / sizeof(uint16_t)) {
+        if(res_pp[i] > threshold){
+            fprintf(fptr, "%s\n", "Successful attack using Prime and Probe");
+            break;
+        }
+    }
+
+    //Clean up
+    free(map);
+    free(res_pp);
+    l1_release(l1_pp);
 }
 
 void prime_and_abort() {
-  //Set up
-  l1pp_t l1_pa = l1_prepare();
-  int samples = MAX_SAMPLES;
+    //Set up
+    l1pp_t l1_pa = l1_prepare();
+    int samples = MAX_SAMPLES;
 
-  int nsets = l1_getmonitoredset(l1_pa, NULL, 0);
+    int nsets = l1_getmonitoredset(l1_pa, NULL, 0);
 
-  int *map = calloc(nsets, sizeof(int));
-  l1_getmonitoredset(l1_pa, map, nsets);
+    int *map = calloc(nsets, sizeof(int));
+    l1_getmonitoredset(l1_pa, map, nsets);
 
-  int rmap[L1_SETS];
-  for (int i = 0; i < L1_SETS; i++)
-    rmap[i] = -1;
-  for (int i = 0; i < nsets; i++)
-    rmap[map[i]] = i;
+    int rmap[L1_SETS];
+    for (int i = 0; i < L1_SETS; i++)
+        rmap[i] = -1;
+    for (int i = 0; i < nsets; i++)
+        rmap[map[i]] = i;
 
-  uint16_t *res_pa = calloc(samples * nsets, sizeof(uint16_t));
-  for (int i = 0; i < samples * nsets; i+= 4096/sizeof(uint16_t))
-    res_pa[i] = 1;
+    uint16_t *res_pa = calloc(samples * nsets, sizeof(uint16_t));
+    for (int i = 0; i < samples * nsets; i += 4096 / sizeof(uint16_t))
+        res_pa[i] = 1;
 
-  //Execute
-  l1_prime_and_abort(l1_pa, res_pa);
+    //Execute
+    bool result = l1_prime_and_abort(l1_pa, res_pa);
+    if (result) {
+        fprintf(fptr, "%s\n", "Successful attack using Prime and Abort");
+    }
 
-  //Clean up
-  free(res_pa);
-  l1_release(l1_pa);
+    //Clean up
+    free(res_pa);
+    l1_release(l1_pa);
 }
 
-double median(double* array, int count) {
+double median(double *array, int count) {
     int mid = count / 2;
     return count % 2 == 0 ? (array[mid - 1] + array[mid]) / 2 : array[mid];
 }
 
-double quartile1(double* array, int count){
+double quartile1(double *array, int count) {
     int mid = count / 4;
     return count % 4 == 0 ? (array[mid - 1] + array[mid]) / 2 : array[mid];
 }
-double quartile3(double* array, int count){
-    int mid = (count*3) / 4;
+
+double quartile3(double *array, int count) {
+    int mid = (count * 3) / 4;
     return count % 4 == 0 ? (array[mid - 1] + array[mid]) / 2 : array[mid];
 }
 
-void printResults(char* action, double* timeMeasurements, int timeMeasurementsCount) {
+void printResults(char *action, double *timeMeasurements, int timeMeasurementsCount) {
     fprintf(fptr, "%s results: \n", action);
     double sum = timeMeasurements[timeMeasurementsCount - 1];
-    for (int i = 0; i < timeMeasurementsCount - 1; i++){
+    for (int i = 0; i < timeMeasurementsCount - 1; i++) {
         fprintf(fptr, "%f ms\n", timeMeasurements[i]);
         sum += timeMeasurements[i];
-        for(int j = 0; j < timeMeasurementsCount - i - 1; j++) {
-            if(timeMeasurements[j] > timeMeasurements[j+1]) {
+        for (int j = 0; j < timeMeasurementsCount - i - 1; j++) {
+            if (timeMeasurements[j] > timeMeasurements[j + 1]) {
                 long tmp = timeMeasurements[j];
-                timeMeasurements[j] = timeMeasurements[j+1];
-                timeMeasurements[j+1] = tmp;
+                timeMeasurements[j] = timeMeasurements[j + 1];
+                timeMeasurements[j + 1] = tmp;
             }
         }
     }
@@ -188,5 +218,6 @@ void printResults(char* action, double* timeMeasurements, int timeMeasurementsCo
     double q3 = quartile3(timeMeasurements, timeMeasurementsCount);
     double avg = sum / timeMeasurementsCount;
 
-    fprintf(fptr, "Min: %f ms, Max: %f ms, Avg: %f ms\n1Q: %f ms, Median: %f ms, 3Q: %f ms\n", timeMeasurements[0], timeMeasurements[timeMeasurementsCount-1], avg, q1, med, q3);
+    fprintf(fptr, "Min: %f ms, Max: %f ms, Avg: %f ms\n1Q: %f ms, Median: %f ms, 3Q: %f ms\n", timeMeasurements[0],
+            timeMeasurements[timeMeasurementsCount - 1], avg, q1, med, q3);
 }
