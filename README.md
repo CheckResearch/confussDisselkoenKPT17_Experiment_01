@@ -16,11 +16,11 @@ The whole experiment has been conducted in a Virtual Machine with the following 
 * 8 Gb of Memory
 * Ethernet connection via NAT over Intel PRO/1000MT Desktop
 
-It is important to note that the Prime+Abort algorithm relys on Intels implementation of transactinal memory called ["Intel TSX"](TODO:WEBSITE) which means that it can only be run on CPUs that support TSX.
+It is important to note that the Prime+Abort algorithm relys on Intels implementation of transactinal memory called ["Intel TSX"](https://software.intel.com/en-us/blogs/2013/06/07/web-resources-about-intelr-transactional-synchronization-extensions) which means that it can only be run on CPUs that support TSX.
 
 #### Software:
 * Ubuntu 18.04
-* [XLATE](https://github.com/vusec/xlate)
+* [Mastik](https://cs.adelaide.edu.au/~yval/Mastik/)
 
 ## Preconditions
 
@@ -32,7 +32,10 @@ In order to build the code `libelf-dev` and `libssl-dev` have to be installed. I
 If you want to run the benchmark please follow the steps described in the `README.md` of the `code` folder.
 ## Experiment Steps
 
-In order to compare the Prime+Probe algorithm with the Prime+Abort the XLATE toolkit has been used. The code has been slightly modify like described in the `README.md` of the `code` folder. The modification has been made for easier incorporation into the code of the benchmarking executable. The benchmark tool executes the Prime+Probe and Prime+Abort code multiple times, tracks the respective execution times and calculates the Min, Max, Median, Q1, Q3 and the Average.
+In order to compare the Prime+Probe algorithm with the Prime+Abort the Mastik toolkit has been used. The code for the Prime+Probe algorithm has been taken from the Mastik toolkit. 
+For the Prime+Abort algorithm the setup and cleanup steps have also been taken from Mastik but the actual attack has been built by using the description of the paper with some help from the implementation used by a toolkit called [XLATE](https://www.vusec.net/projects/xlate/). 
+The XLATE code can be found on [GitHub](https://github.com/vusec/xlate).
+The benchmark tool executes the Prime+Probe and Prime+Abort code multiple times, tracks the respective execution times and calculates the Min, Max, Median, Q1, Q3 and the Average.
 
 ## Results
 

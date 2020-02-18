@@ -1,5 +1,2 @@
 # Original Code
-
-Please put code originating from the publication in this directory.
-
-Additionally generated code belongs into the parent directory.
+The Folder `Mastik-0.02-AyeAyeCapn` contains the original source code of the Side-Channel Toolkit 'Mastik'. The code along with its documentation can be obtained on the [Mastik Homepage](https://cs.adelaide.edu.au/~yval/Mastik/).

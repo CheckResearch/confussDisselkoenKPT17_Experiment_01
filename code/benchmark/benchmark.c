@@ -31,7 +31,7 @@ void measure(int cycleCount, char *title, void (*action)());
 
 
 void usage(const char *prog) {
-    fprintf(stderr, "Usage: %s -c cycles -d directory\n", prog);
+    fprintf(stderr, "Usage: %s -c cycles\n", prog);
     exit(1);
 }
 
@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
     int cycles = 1000;
     int opt;
 
-    while ((opt = getopt(argc, argv, "c:l:")) != -1) {
+    while ((opt = getopt(argc, argv, "c:")) != -1) {
         switch (opt) {
             case 'c':
                 cycles = atoi(optarg);
