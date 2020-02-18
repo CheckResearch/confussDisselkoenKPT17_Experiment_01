@@ -1001,7 +1001,7 @@ Prime and Probe L1 results:
 0.000000 ms
 Min: 138232.000000 ms, Max: 181816.000000 ms, Avg: 151357.433000 ms
 1Q: 146581.500000 ms, Median: 149519.000000 ms, 3Q: 153798.000000 ms
-Prime and Probe L1 results: 
+Prime and Abort L1 results: 
 1234.000000 ms
 902.000000 ms
 750.000000 ms

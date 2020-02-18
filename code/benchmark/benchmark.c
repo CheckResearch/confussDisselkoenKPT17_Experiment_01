@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
     measure(cycles, "Prime and Probe L1", prime_and_probe);
     printf("%s\n", "Measuring Prime and Abort");
     printf("%s\n", "");
-    measure(cycles, "Prime and Probe L1", prime_and_abort);
+    measure(cycles, "Prime and Abort L1", prime_and_abort);
 
     fclose(fptr);
 
