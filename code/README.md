@@ -8,7 +8,7 @@ With the option `-c [cylces]` you can further specify how often the algorithms s
 
 If you want to benchmark a real attack against an encryption software you can make use of the provided shell script
 
-	#rungpg.sh
+	rungpg.sh
 	
 This script endlessly signs the file `victim.txt` in order to really detect an access of a cache set containing an RSA key.
 ## Prerequisites
