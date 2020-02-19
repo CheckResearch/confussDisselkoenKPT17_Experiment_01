@@ -106,21 +106,6 @@ void prime_and_probe() {
 
     int nsets = l1_getmonitoredset(l1_pp, NULL, 0);
 
-    uint16_t *results = calloc(samples * nsets, sizeof(uint16_t));
-    for (int i = 0; i < samples * nsets; i += 4096 / sizeof(uint16_t))
-        results[i] = 1;
-
-    l1_probe(l1_pp, results);
-
-    uint16_t sum = 0;
-    int count = 0;
-    for (int i = 0; i < samples * nsets; i += 4096 / sizeof(uint16_t)) {
-        sum += results[i];
-        count++;
-    }
-
-    uint16_t threshold = (uint16_t)((sum / count) * 1.2);
-
     int *map = calloc(nsets, sizeof(int));
     l1_getmonitoredset(l1_pp, map, nsets);
 
@@ -137,13 +122,6 @@ void prime_and_probe() {
 
     //Execute
     l1_repeatedprobe(l1_pp, MAX_SAMPLES, res_pp, 0);
-
-    for (int i = 0; i < samples * nsets; i += 4096 / sizeof(uint16_t)) {
-        if(res_pp[i] > threshold){
-            fprintf(fptr, "%s\n", "Successful attack using Prime and Probe");
-            break;
-        }
-    }
 
     //Clean up
     free(map);
@@ -172,10 +150,7 @@ void prime_and_abort() {
         res_pa[i] = 1;
 
     //Execute
-    bool result = l1_prime_and_abort(l1_pa, res_pa);
-    if (result) {
-        fprintf(fptr, "%s\n", "Successful attack using Prime and Abort");
-    }
+    l1_prime_and_abort(l1_pa, res_pa);
 
     //Clean up
     free(res_pa);

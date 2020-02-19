@@ -4,21 +4,17 @@ TARGETS=benchmark
 OBJS+=$(FILES:.c=.o)
 CFLAGS += -D_GNU_SOURCE -g3 -Wall -Wextra -std=gnu11 -O2
 LDFLAGS += -flto -O2
-LIBS += -lelf -lpthread -lrt -lcrypto
 
-dep = $(obj:.o=.d)
--include $(dep)
 
 .PHONY: all clean
 
 
-obj = $(addprefix $(BUILD)/xlate/, $(obj-y))
-obj += $(addprefix $(BUILD)/, $(OBJS))
+obj = $(addprefix $(BUILD)/, $(OBJS))
 
 all: benchmark
 
 benchmark: $(obj)
-	$(CC) $(obj) -o $@ $(LDFLAGS) $(LIBS)
+	$(CC) $(obj) -o $@ $(LDFLAGS)
 
 $(BUILD)/%.o: %.c
 	mkdir -p $(dir $@)
